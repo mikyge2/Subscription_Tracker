@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Wakene Report Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #0a2a43;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+            position: relative;
+            color: #e4e9f0;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            backdrop-filter: blur(8px);
+            background-color: rgba(0, 0, 0, 0.25);
+            z-index: 0;
+        }
+
+        .card {
+            position: relative;
+            background-color: rgba(17, 34, 64, 0.9);
+            border: 1px solid #ffc72c;
+            border-radius: 1rem;
+            box-shadow: 0 0 40px #ffc72c66;
+            z-index: 1;
+            width: 100%;
+            max-width: 750px;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .top-right {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #ffc72c;
+            color: #062b59;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            z-index: 2;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .top-right:hover {
+            background-color: #ffb520;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ffc72c;
+            font-size: 1.8rem;
+            margin-top: 1rem;
+            margin-bottom: 0.4rem;
+        }
+
+        h3 {
+            text-align: left;
+            font-size: 1.2rem;
+            margin-bottom: 0.2rem;
+            color: white;
+            word-break: break-word;
+        }
+
+        h4 {
+            color: #ffc72c;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        label {
+            color: #ffc72c;
+            font-weight: bold;
+            margin-top: 0.8rem;
+            display: block;
+            margin-bottom: 0.8rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: rgba(36, 54, 85, 0.7);
+            color: #e4e9f0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            outline: none;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s, border-color 0.3s;
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+        }
+
+        ::placeholder {
+            color: rgba(228, 233, 240, 0.7);
+            opacity: 1;
+        }
+
+        input:focus, textarea:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: #ffc72c;
+        }
+
+        .btn {
+            width: 100%;
+            background-color: #ffc72c;
+            color: #062b59;
+            font-weight: bold;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px transparent;
+            margin-top: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 20px #ffc72c;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .unit-price {
+            flex: 0 0 35%;
+        }
+
+        .flex-row-sales {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .sales {
+            flex: 1;
+        }
+
+        form {
+            width: 100%;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(17, 34, 64, 0.9);
+            padding: 1.5rem;
+            border: 2px solid #ffc72c;
+            border-radius: 1rem;
+            box-shadow: 0 0 40px #ffc72c66;
+            color: #e4e9f0;
+            z-index: 1000;
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+        }
+
+        .popup h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+            color: #ffc72c;
+            text-align: center;
+        }
+
+        .popup p {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .popup button {
+            background-color: #ffc72c;
+            color: #062b59;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 60%;
+            margin: 0 auto;
+        }
+
+        .popup button:hover {
+            background-color: #ffb520;
+        }
+
+        .flex-row-sales-labels{
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Tablet Styles */
+        @media (max-width: 768px) {
+            .card {
+                padding: 1.5rem 1.25rem;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+            }
+
+            input, textarea, select {
+                font-size: 0.9rem;
+                padding: 0.7rem;
+            }
+
+            .flex-row-sales {
+                gap: 0.5rem;
+            }
+
+            .unit-price {
+                flex: 0 0 40%;
+            }
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 640px) {
+            .flex-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .card {
+                padding: 1.5rem 1rem;
+                border-radius: 0.75rem;
+            }
+
+            .top-right {
+                top: 0.75rem;
+                right: 0.75rem;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            h2 {
+                font-size: 1.4rem;
+                margin-top: 1.5rem;
+            }
+
+            h3 {
+                font-size: 1.1rem;
+            }
+
+            h4 {
+                font-size: 1rem;
+            }
+
+            .flex-row-sales {
+                flex-wrap: nowrap;
+            }
+
+            .unit-price {
+                flex: 0 0 40%;
+                min-width: 90px;
+            }
+
+            input, textarea, select {
+                margin-bottom: 0.5rem;
+                padding: 0.6rem;
+                font-size: 0.85rem;
+            }
+
+            ::placeholder {
+                font-size: 0.85rem;
+            }
+
+            .popup {
+                width: 85%;
+                padding: 1.25rem;
+            }
+
+            .popup h3 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Small Mobile Styles */
+        @media (max-width: 400px) {
+            .top-right {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.6rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .unit-price {
+                min-width: 80px;
+            }
+
+            input, textarea, select {
+                font-size: 0.8rem;
+            }
+
+            ::placeholder {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<a href="/displayReports.html" class="top-right">
+    <i class="fas fa-history"></i>
+    My Past Reports
+</a>
+
+<div class="card">
+    <h2>Wakene Factory Report Form</h2>
+    <h3 id="reporterName">Loading...</h3>
+    <form id="reportForm">
+        <h4>Report Date <span style="color: red;">*</span></h4>
+        <input type="date" id="date" name="date" required />
+
+        <div class="flex-row">
+            <div class="column" id="production-column">
+                <label>Production <span style="color: red;">*</span></label>
+                <input type="number" name="production[5kg]" min="0" placeholder="5kg Production in Pkt" required />
+                <input type="number" name="production[10kg]" min="0" placeholder="10kg Production in Pkt" required />
+                <input type="number" name="production[25kg]" min="0" placeholder="25kg Production in Pkt" required />
+                <input type="number" name="production[50kg]" min="0" placeholder="50kg Production in Pkt" required />
+            </div>
+
+            <div class="column">
+                <div class="flex-row-sales-labels" >
+                    <label>Sales <span style="color: red;">*</span></label>
+                    <label>Unit Prices <span style="color: red;">*</span></label>
+                </div>
+                <div class="flex-row-sales">
+                    <input type="number" class="sales" name="sales[5kg]" min="0" placeholder="5kg Sales" required />
+                    <input type="number" class="unit-price" name="unitPrice[5kg]" min="1.0" step="0.01" placeholder="Price/Pkt" required />
+                </div>
+                <div class="flex-row-sales">
+                    <input type="number" class="sales" name="sales[10kg]" min="0" placeholder="10kg Sales" required />
+                    <input type="number" class="unit-price" name="unitPrice[10kg]" min="1.0" step="0.01" placeholder="Price/Pkt" required />
+                </div>
+                <div class="flex-row-sales">
+                    <input type="number" class="sales" name="sales[25kg]" min="0" placeholder="25kg Sales" required />
+                    <input type="number" class="unit-price" name="unitPrice[25kg]" min="1.0" step="0.01" placeholder="Price/Pkt" required />
+                </div>
+                <div class="flex-row-sales">
+                    <input type="number" class="sales" name="sales[50kg]" min="0" placeholder="50kg Sales" required />
+                    <input type="number" class="unit-price" name="unitPrice[50kg]" min="1.0" step="0.01" placeholder="Price/Pkt" required />
+                </div>
+            </div>
+        </div>
+
+        <h4>Problem Occurred</h4>
+        <textarea name="problemOccurred" placeholder="Describe any problems that occurred"></textarea>
+
+        <h4>Solution Taken</h4>
+        <textarea name="solutionTaken" placeholder="Describe solutions implemented"></textarea>
+
+        <button type="submit" class="btn">Submit Report</button>
+
+        <!-- Success Popup -->
+        <div class="popup" id="successPopup">
+            <h3 id="popTitle"></h3>
+            <p id="popContent"></p>
+            <button class="btn" id="popButton"></button>
+        </div>
+
+    </form>
+</div>
+
+<script type="module">
+    document.addEventListener("DOMContentLoaded", function() {
+        const dateInput = document.querySelector('input[type="date"]');
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('max', today);
+        try{
+            // Set the value of the h3 element
+            const reporterName = document.getElementById("reporterName");
+            reporterName.textContent = "Reporter Name: " + localStorage.getItem('name').slice(1, -1);
+        }catch (error) {
+            console.error('Invalid Reporter', error);
+            showPopup(`❌ Reporter Error`, `Login Again`, "Login");
+        }
+    });
+    document.getElementById('reportForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const dateInput = document.getElementById('date');
+        const currentDate = new Date().toISOString().split('T')[0];
+
+        if (!dateInput.value) {
+            alert("❌ Report Date cannot be in the future.");
+            return;
+        }
+
+        if (dateInput.value > currentDate) {
+            alert("❌ Report Date cannot be in the future.");
+            return;
+        }
+
+        const dateIsValid=await validateDate(new Date(dateInput.value), localStorage.getItem('userID'));
+        console.log("Date is valid:", dateIsValid);
+        if(dateIsValid){
+            const productionInputs = document.querySelectorAll("input[name^='production']");
+            const salesInputs = document.querySelectorAll("input[name^='sales']");
+            const unitPriceInputs = document.querySelectorAll("input[name^='unitPrice']");
+            const productionData = {};
+            const salesData = {};
+            const unitPriceData = {};
+
+            for (const input of productionInputs) {
+                if (parseFloat(input.value) < 0) {
+                    alert("❌ Production values cannot be below zero.");
+                    return;
+                }
+                const key = input.name.match(/\[(.*?)\]/)[1];
+                productionData[key] = parseInt(input.value);
+            }
+
+            for (const input of salesInputs) {
+                if (parseFloat(input.value) < 0) {
+                    alert("❌ Sales values cannot be below zero.");
+                    return;
+                }
+                const key = input.name.match(/\[(.*?)\]/)[1];
+                salesData[key] = parseInt(input.value);
+            }
+
+            for (const input of unitPriceInputs) {
+                const key = input.name.match(/\[(.*?)\]/)[1];
+                const value = parseFloat(input.value);
+                if (isNaN(value) || value <= 0) {
+                    alert(`❌ Invalid Unit Price for ${key}.`);
+                    return;
+                };
+                // Ensure the decimal values are preserved
+                unitPriceData[key] = Math.round(value * 100) / 100;
+            }
+
+            const reportData = {
+                date: new Date(dateInput.value).toISOString(),
+                production: productionData,
+                sales: salesData,
+                unitPrice: unitPriceData,
+                problemOccurred: document.querySelector("textarea[name='problemOccurred']").value.trim(),
+                solutionTaken: document.querySelector("textarea[name='solutionTaken']").value.trim(),
+                reporter: localStorage.getItem('userID'),
+                reporterName: localStorage.getItem('name').slice(1, -1)
+            };
+
+            console.log("Generated JSON:", JSON.stringify(reportData, null, 2));
+
+            // Get the token from localStorage
+            const token = localStorage.getItem('authToken')
+            if (!token) {
+                console.error('No authentication token provided');
+                showPopup(`❌ Unauthenticated`, `You are not authenticated. Redirecting to login...`, "Login");
+                return;
+            }
+            try {
+                const response = await fetch(`http://localhost:5500/api/v1/reports/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(reportData)
+                });
+
+                if (response.ok) {
+                    showPopup("✅ Report Submitted!", "Your report has been successfully sent.", "Okay");
+                    this.reset();
+                } else {
+                    const errorText = await response.text();
+                    const errorObj = JSON.parse(errorText);
+                    const errorMessage = errorObj.error.split(',')[0];
+                    showPopup(`❌ Failed to submit report`, errorMessage, "Retry");
+                    console.error('Server Error:', errorText);
+
+                    // If the token is expired or invalid, redirect to login
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('name');
+                        localStorage.removeItem('userID');
+                        console.error("❌ Session expired. Redirecting to login...");
+                        showPopup(`❌ Session expired.`, 'Redirecting to login...', "Login");
+                    }else if (response.status ===429){
+                        showPopup(`❌ Too Fast`, `You are making too many requests slow down`, "Close");
+                    }
+                }
+            } catch (error) {
+                console.error('Network Error:', error);
+                showPopup(`❌ Network Error`, `Unable to send the report.`, "Retry");
+            }
+        }
+    });
+
+    async function validateDate(selectedDate, id){
+
+        try {
+            const token = localStorage.getItem('authToken');
+            const userID = localStorage.getItem('userID');
+            console.log(`http://localhost:5500/api/v1/reports/user/${userID}`);
+            const response = await fetch(`http://localhost:5500/api/v1/reports/user/${userID}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.data.length > 0) {
+                const reportExists = data.data.some(report => {
+                    const reportDate = new Date(report.date);
+                    // Comparing year, month, and day only (ignoring time)
+                    return reportDate.getUTCFullYear() === selectedDate.getUTCFullYear() &&
+                        reportDate.getUTCMonth() === selectedDate.getUTCMonth() &&
+                        reportDate.getUTCDate() === selectedDate.getUTCDate() &&
+                        report._id !== id;
+                });
+                if (reportExists) {
+                    showPopup(`❌ Report Exists`, `You have already submitted a report for the date: ${selectedDate.toDateString()}`, "Close");
+                    return false;
+                } else {
+                    return true;
+                }
+            } else if(data.success && data.data.length === 0){
+                return true;
+            }else if (response.status ===429){
+                showPopup(`❌ Too Fast`, `You are making too many requests slow down`, "Close");
+            } else if(!data.success){
+                console.error("No reports found or data format incorrect.");
+                showPopup(`❌ Empty`, `You have not made any Reports`, "Make a Report");
+            }
+        } catch (error) {
+            console.error("Error fetching reports:", error);
+            showPopup(`❌ Loading Error`, `Unable to Load Your Reports at the Moment`, "Go Back");
+        }
+        return false;
+    }
+
+    function showPopup(popTitle, popContent, popButton) {
+        document.getElementById('successPopup').style.display = 'block';
+        const popTitleElement = document.getElementById("popTitle");
+        popTitleElement.textContent = popTitle;
+        const popContentElement = document.getElementById("popContent");
+        popContentElement.textContent = popContent;
+        const popButtonElement = document.getElementById("popButton");
+        popButtonElement.textContent = popButton;
+
+        document.getElementById("popButton").onclick = function() {
+            if(popButton==="Login"){
+                window.location.href = "/index.html";
+            }else if(popButton==="Retry"){
+                closePopup();
+            }else if(popButton==="Okay" || popButton==="Go back"){
+                document.getElementById('successPopup').style.display = 'none';
+            }else if(popButton==="Close") {
+                closePopup();
+                window.location.reload();
+            }
+        };
+    }
+
+    function closePopup() {
+        document.getElementById('successPopup').style.display = 'none';
+        window.location.reload();
+    }
+</script>
+</body>
+</html>

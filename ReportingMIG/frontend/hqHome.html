@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Head Quarters</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #062b59;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            backdrop-filter: blur(8px);
+            background-color: rgba(0, 0, 0, 0.2);
+            z-index: 0;
+        }
+
+        .card {
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid #ffc72c;
+            border-radius: 1rem;
+            box-shadow: 0 0 40px #ffc72c66;
+            z-index: 1;
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            color: white;
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ffc72c;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn {
+            width: 100%;
+            background-color: #ffc72c;
+            color: #062b59;
+            font-weight: bold;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            border: none;
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px transparent;
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 20px #ffc72c;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #062b59;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+            position: relative;
+        }
+
+        h1 {
+            color: #ffc72c;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.1rem;
+            text-transform: uppercase;
+        }
+
+        .card-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .card {
+            width: 90%;
+            background: linear-gradient(135deg, #0b3d6b, #062b59);
+            border: 2px solid #ffc72c;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            color: #e4e9f0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 20px 50px rgba(255, 199, 44, 0.5);
+        }
+
+        .card table {
+            width: 100%;
+            margin-top: 0.5rem;
+            border-collapse: collapse;
+        }
+
+        .card table th, .card table td {
+            padding-top: 0.5rem;
+            text-align: center;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .card table th {
+            color: #ffc72c;
+            border-bottom: 1px solid #ffc72c;
+        }
+
+        .actions button {
+            background-color: #ffc72c;
+            color: #062b59;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .actions button:hover {
+            background-color: #ffb520;
+        }
+
+        .actions button.delete {
+            background-color: #e63946;
+            color: white;
+        }
+
+        .actions button.delete:hover {
+            background-color: #c92a2a;
+        }
+
+        .non-editable {
+            display: inline-block;
+            color: #ffc72c;
+            font-weight: bold;
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.3rem;
+        }
+
+        .edit-input {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #ffc72c;
+            color: #ffc72c;
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.3rem;
+            width: 70px;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(17, 34, 64, 0.9);
+            padding: 1.5rem;
+            border: 2px solid #ffc72c;
+            border-radius: 1rem;
+            box-shadow: 0 0 40px #ffc72c66;
+            color: #e4e9f0;
+            z-index: 1000;
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+        }
+
+        .popup h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+            color: #ffc72c;
+            text-align: center;
+        }
+
+        .popup p {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .popup button {
+            background-color: #ffc72c;
+            color: #062b59;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 60%;
+            margin: 0 auto;
+        }
+
+        .popup button:hover {
+            background-color: #ffb520;
+        }
+
+        #buttonContainer {
+            display: block;
+        }
+
+        #reportContainer{
+            display: none;
+        }
+
+        @media screen and (max-width: 768px) {
+            .edit-input {
+                width: 50% !important;
+            }
+            table td {
+                padding-top: 0.5rem;
+                padding-right: 0.2rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+<div class="card" id="introCard">
+    <h2>Select Plant</h2>
+    <button class="btn" id="btnAmen">Amen Natural Plc</button>
+    <button class="btn" id="btnPlast">Mintu Plast</button>
+    <button class="btn" id="btnWakene">Wakene</button>
+    <button class="btn" id="btnExport">Export</button>
+</div>
+<div id="reportContainer">
+    <h1 id="filedReportsID">Filed Reports</h1>
+    <div class="card-container" id="cardContainer"></div>
+    <!-- Success Popup -->
+    <div class="popup" id="successPopup">
+        <h3 id="popTitle"></h3>
+        <p id="popContent"></p>
+        <div id="buttonContainer">
+            <button class="btn" id="popButton"> </button>
+            <button class="btn" id="popButton2" style="display: none"> </button>
+        </div>
+    </div>
+</div>
+<script type="module">
+    document.querySelectorAll('.edit-input[type="date"]').forEach(input => {
+        const today = new Date().toISOString().split('T')[0];
+        input.setAttribute('max', today);
+    });
+
+    document.querySelectorAll('.integer-only').forEach(input => {
+        input.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+    });
+
+    document.querySelectorAll('.decimal-only').forEach(input => {
+        input.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+            if ((e.target.value.match(/\./g) || []).length > 1) {
+                e.target.value = e.target.value.substring(0, e.target.value.lastIndexOf('.'));
+            }
+        });
+    });
+
+    async function fetchReports(plant) {
+
+        document.getElementById('introCard').style.display = 'none';
+        document.getElementById('reportContainer').style.display = 'block';
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`http://localhost:5500/api/v1/reports/plant/${plant}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+
+            });
+            const data = await response.json();
+
+            if (data.success && data.data.length > 0) {
+                renderReports(data.data);
+            } else if (response.status ===429){
+                console.error("You are making too many requests slow down");
+                showPopup(`❌ Too Fast`, `You are making too many requests slow down`, "Close");
+            }else {
+                console.error("No reports found or data format incorrect.");
+                showPopup(`❌ Empty`, `You have not made any Reports`, "Make a Report");
+            }
+        } catch (error) {
+            console.error("Error fetching reports:", error);
+            showPopup(`❌ Loading Error`, `Unable to Load Your Reports at the Moment`, "Go Back");
+        }
+    }
+
+    async function renderReports(reports) {
+        const container = document.getElementById('cardContainer');
+        container.innerHTML = '';
+
+        const token = localStorage.getItem('authToken');
+        for (const report of reports) {
+
+            const card = document.createElement('div');
+            card.classList.add('card');
+            const today = new Date().toISOString().split('T')[0];
+            card.innerHTML = `
+                <h3>Report Details</h3>
+                <p><strong>Reporter:</strong> <span class="non-editable">${report.reporterName}</span></p>
+                <p><strong>Date:</strong> <span class="non-editable">${new Date(report.date).toISOString().split('T')[0]}</span><input type="date" class="edit-input" style="width: 30%" max="${today}" value="${new Date(report.date).toISOString().split('T')[0]}"/></p>
+                <table>
+                    <tr><th>Type</th><th>360ml</th><th>600ml</th><th>1L</th><th>2L</th></tr>
+                    ${['production', 'sales'].map(type => `
+                        <tr><td><strong>${type.charAt(0).toUpperCase() + type.slice(1)}:</strong></td>
+                            ${['360ml', '600ml', '1L', '2L'].map(size => `
+                                <td><span class="non-editable">${report[type][size]}</span><input class="edit-input" type="number" min="0" name="productionAndSales" value="${report[type][size]}" /></td>
+                            `).join('')}
+                        </tr>
+                    `).join('')}
+
+                    ${['unitPrice'].map(type => `
+                        <tr><td><strong>${type.charAt(0).toUpperCase() + type.slice(1)}:</strong></td>
+                            ${['360ml', '600ml', '1L', '2L'].map(size => `
+                                <td><span class="non-editable">${report[type][size]}</span><input class="edit-input" type="number" min="1.0" step="0.01" name="unitPrice" value="${report[type][size]}" /></td>
+                            `).join('')}
+                        </tr>
+                    `).join('')}
+                </table>
+                <p><strong>Problem Occurred:</strong> <span class="non-editable">${report.problemOccurred}</span><input type="text" class="edit-input" value="${report.problemOccurred}"/></p>
+                <p><strong>Solution Taken:</strong> <span class="non-editable">${report.solutionTaken}</span><input type="text" class="edit-input" value="${report.solutionTaken}"/></p>
+                <!-- <div class="actions">
+                    <button onclick="toggleEdit(this, '${report._id}', '${new Date(report.date).toISOString().split('T')[0]}')">Edit</button>
+                    <button class="delete" onclick="showPopup('Deleting Report...', 'Are you sure you want to delete report from ${new Date(report.date).toISOString().split('T')[0]}', 'Yes', 'Cancel', '${report._id}')">Delete</button>
+                </div> -->
+            `;
+            container.appendChild(card);
+        }
+    }
+
+    async function toggleEdit(button, id='', date='') {
+        if(button.textContent === 'Edit') {
+            const card = button.closest('.card');
+            card.classList.toggle('edit-mode');
+            card.querySelectorAll('.non-editable').forEach(el => el.style.display = card.classList.contains('edit-mode') ? 'none' : 'inline-block');
+            card.querySelectorAll('.edit-input').forEach(el => el.style.display = card.classList.contains('edit-mode') ? 'inline-block' : 'none');
+            button.textContent = card.classList.contains('edit-mode') ? 'Save' : 'Edit';
+
+
+            const deleteButtonElement = card.getElementsByClassName('delete')[0];
+            deleteButtonElement.style.backgroundColor = '#ffc72c';
+            deleteButtonElement.style.color = '#062b59';
+            deleteButtonElement.textContent = "Don't Save";
+            deleteButtonElement.onclick = function()  {
+                deleteButtonElement.textContent = 'Delete';
+                deleteButtonElement.style.backgroundColor = '#e63946';
+                deleteButtonElement.style.color = 'white';
+                window.location.reload();
+            };
+        } else if(button.textContent === 'Save') {
+            const validatedFields= await validateFields(button, id);
+
+            if(validatedFields){
+                showPopup('Updating Report...', `Are you sure you want to save changes on report from ${date}`, 'Save', 'Cancel', `${id}`, button)
+            }
+        }
+    }
+
+    async function validateDate(selectedDate, id){
+
+        try {
+            const token = localStorage.getItem('authToken');
+            const userID = localStorage.getItem('userID');
+
+            const response = await fetch(`http://localhost:5500/api/v1/reports/user/${userID}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.data.length > 0) {
+                const reportExists = data.data.some(report => {
+                    const reportDate = new Date(report.date);
+                    // Comparing year, month, and day only (ignoring time)
+                    return reportDate.getUTCFullYear() === selectedDate.getUTCFullYear() &&
+                        reportDate.getUTCMonth() === selectedDate.getUTCMonth() &&
+                        reportDate.getUTCDate() === selectedDate.getUTCDate() &&
+                        report._id !== id;
+                });
+                if (reportExists) {
+                    showPopup(`❌ Report Exists`, `You have already submitted a report for the date: ${selectedDate.toDateString()}`, "Close");
+                } else {
+                    return true;
+                }
+            } else {
+                console.error("No reports found or data format incorrect.");
+                showPopup(`❌ Empty`, `You have not made any Reports`, "Make a Report");
+            }
+        } catch (error) {
+            console.error("Error fetching reports:", error);
+            showPopup(`❌ Loading Error`, `Unable to Load Your Reports at the Moment`, "Go Back");
+        }
+    }
+    async function validateFields(button, id){
+
+        const productionAndSalesInputs = document.querySelectorAll("input[name^='productionAndSales']");
+        const unitPriceInputs = document.querySelectorAll("input[name^='unitPrice']");
+
+        const card = button.closest('.card');
+        const inputs = card.querySelectorAll('.edit-input');
+        const dateInput = new Date(inputs[0].value);
+        const dateIsValid = await validateDate(dateInput, id); // Use await here
+
+        if (!dateIsValid) {
+            return;
+        }
+
+        for (const input of productionAndSalesInputs) {
+            const value = input.value.trim();
+            // Check if the value is a positive integer
+            if (!/^\d+$/.test(value) || parseInt(value) < 0) {
+                alert("❌ Production and Sales values can't be Negative or in Decimal).");
+                return;
+            }
+        }
+
+        for (const input of unitPriceInputs) {
+            const value = parseFloat(input.value);
+            if (isNaN(value) || value <= 0) {
+                alert(`❌ Unit Price can not be zero or below.`);
+                return;
+            }
+        }
+
+        return true;
+    }
+
+    async function saveReport(button, id) {
+
+        const card = button.closest('.card');
+        const inputs = card.querySelectorAll('.edit-input');
+        const updatedData = {
+            date: inputs[0].value,
+            production: { '360ml': inputs[1].value, '600ml': inputs[2].value, '1L': inputs[3].value, '2L': inputs[4].value },
+            sales: { '360ml': inputs[5].value, '600ml': inputs[6].value, '1L': inputs[7].value, '2L': inputs[8].value },
+            unitPrice: { '360ml': inputs[9].value, '600ml': inputs[10].value, '1L': inputs[11].value, '2L': inputs[12].value },
+            problemOccurred: inputs[13].value,
+            solutionTaken: inputs[14].value
+        };
+        console.log('Updating report:', updatedData);
+        const token = localStorage.getItem('authToken')
+        if (!token) {
+            console.error('No authentication token provided');
+            showPopup(`❌ Unauthenticated`, `You are not authenticated. Redirecting to login...`, "Login");
+            return;
+        }
+        try {
+            const response = await fetch(`${SERVER_URL}/api/v1/reports/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(updatedData)
+            });
+            console.log("Generated JSON:", JSON.stringify(updatedData, null, 2));
+
+            if (response.ok) {
+                console.log("Updating report: " + id);
+                showPopup("✅ Report Updated!", "Your report has been successfully Updated.", "Close");
+                //this.reset();
+            } else {
+                const errorText = await response.text();
+                const errorObj = JSON.parse(errorText);
+                const errorMessage = errorObj.error.split(',')[0];
+                showPopup(`❌ Failed to update report`, errorMessage, "Retry");
+                console.error('Server Error:', errorText);
+
+                // If the token is expired or invalid, redirect to login
+                if (response.status === 401 || response.status === 403) {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('name');
+                    localStorage.removeItem('userID');
+                    console.error("❌ Session expired. Redirecting to login...");
+                    showPopup(`❌ Session expired.`, 'Redirecting to login...', "Login");
+                }
+            }
+        } catch (error) {
+            console.error('Network Error:', error);
+            showPopup(`❌ Network Error`, `Unable to update the report.`, "Retry");
+        }
+    }
+
+    async function deleteReport(id) {
+        const token = localStorage.getItem('authToken')
+        if (!token) {
+            console.error('No authentication token provided');
+            showPopup(`❌ Unauthenticated`, `You are not authenticated. Redirecting to login...`, "Login");
+            return;
+        }
+        try {
+            const response = await fetch(`http://localhost:5500/api/v1/reports/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                console.log("deleting report: " + id);
+                showPopup("✅ Report Deleted!", "Your report has been successfully Deleted.", "Close");
+                //this.reset();
+            } else {
+                const errorText = await response.text();
+                const errorObj = JSON.parse(errorText);
+                const errorMessage = errorObj.error.split(',')[0];
+                showPopup(`❌ Failed to delete report`, errorMessage, "Retry");
+                console.error('Server Error:', errorText);
+
+                // If the token is expired or invalid, redirect to login
+                if (response.status === 401 || response.status === 403) {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('name');
+                    localStorage.removeItem('userID');
+                    console.error("❌ Session expired. Redirecting to login...");
+                    showPopup(`❌ Session expired.`, 'Redirecting to login...', "Login");
+                }
+            }
+        } catch (error) {
+            console.error('Network Error:', error);
+            showPopup(`❌ Network Error`, `Unable to delete the report.`, "Retry");
+        }
+    }
+    function showPopup(popTitle, popContent, popButton, popButton2='', id='', findCardButton='') {
+        document.getElementById('successPopup').style.display = 'block';
+        const popTitleElement = document.getElementById("popTitle");
+        popTitleElement.textContent = popTitle;
+        const popContentElement = document.getElementById("popContent");
+        popContentElement.textContent = popContent;
+        const popButtonElement = document.getElementById("popButton");
+        popButtonElement.textContent = popButton
+        if(popButton==='Yes'){
+            popButtonElement.style.backgroundColor = 'red';
+            popButtonElement.style.color = 'white';
+        }
+        if(popButton2===''){
+            const popButtonElement2 = document.getElementById("popButton2");
+            popButtonElement2.style.display = 'none';
+            const buttonContainer = document.getElementById('buttonContainer');
+            buttonContainer.style.display = 'block';
+        }else if(popButton2!==''){
+            const popButtonElement2 = document.getElementById("popButton2");
+            popButtonElement2.textContent = popButton2;
+            popButtonElement2.style.display = 'block';
+            const buttonContainer = document.getElementById('buttonContainer');
+            // Make them side by side
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.gap = '10px';
+        }
+
+        document.getElementById("popButton").onclick = function() {
+            if(popButton==="Close" || popButton==="Retry"){
+                closePopup();
+            }else if(popButton==="Login"){
+                window.location.href = "/index.html";
+            }else if(popButton==="Yes"){
+                deleteReport(id);
+                popButtonElement.style.backgroundColor = '#ffc72c';
+                popButtonElement.style.color = '#062b59';
+            } else if(popButton==="Go Back" || popButton==="Make a Report"){
+                window.location.href = "/amenFactoryHome.html";
+            } else if(popButton==="Save"){
+                saveReport(findCardButton, id);
+            }
+        };
+        document.getElementById("popButton2").onclick = function() {
+            if(popButton2==="Cancel"){
+                popButtonElement.style.backgroundColor = '#ffc72c';
+                popButtonElement.style.color = '#062b59';
+                document.getElementById('successPopup').style.display = 'none';
+            }
+        };
+    }
+
+    function closePopup() {
+        document.getElementById('successPopup').style.display = 'none';
+        window.location.reload();
+    }
+
+    document.getElementById('btnAmen').addEventListener('click', () => fetchReports('Amen'));
+    document.getElementById('btnPlast').addEventListener('click', () => fetchReports('Plast'));
+    document.getElementById('btnWakene').addEventListener('click', () => fetchReports('Wakene'));
+    document.getElementById('btnExport').addEventListener('click', () => fetchReports('Export'));
+
+</script>
+</body>
+</html>
