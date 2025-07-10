@@ -1,14 +1,27 @@
 import AmenReport from '../models/amenReport.model.js';
 import { SERVER_URL } from "../config/env.js";
 import WakeneReport from "../models/wakeneReport.model.js";
+import PlastReport from "../models/plastReport.model.js";
 
 export const createReport = async (req, res, next) => {
     try {
-        const report = await AmenReport.create({
-            ...req.body,
-            reporter: req.user._id,
-        });
-
+        const plantName=req.params.name;
+        if(plantName === "Amen") {
+            const report = await AmenReport.create({
+                ...req.body,
+                reporter: req.user._id,
+            });
+        }else if(plantName === "Wakene") {
+            const report = await WakeneReport.create({
+                ...req.body,
+                reporter: req.user._id,
+            });
+        } else if(plantName === "Plast") {
+            const report = await PlastReport.create({
+                ...req.body,
+                reporter: req.user._id,
+            });
+        }
         res.status(201).json({success: true, data: report});
     } catch (error){
         next(error);
@@ -58,7 +71,7 @@ export const getPlantReports = async (req, res, next) => {
     const plantName=req.params.name;
     try{
         if(plantName === "Amen"){
-            const reports = await AmenReport.find({plant: req.params.name});
+            const reports = await AmenReport.find();
             res.status(200).json({success: true, data: reports});
         }else if(plantName === "Plast"){
             const reports = await PlastReport.find({plant: req.params.name});

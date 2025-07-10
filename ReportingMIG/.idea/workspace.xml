@@ -4,8 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6eaedab9-3576-4fea-a7b6-c0e3edc2cd65" name="Changes" comment="Initial Loading to Github">
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Changes.xml" afterDir="false" />
+    <list default="true" id="6eaedab9-3576-4fea-a7b6-c0e3edc2cd65" name="Changes" comment="Excel Download. Include Reporter Name and Plant Report.">
+      <change afterPath="$PROJECT_DIR$/frontend/plastFactoryHome.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/plastReport.model.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/report.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/report.controller.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/amenFactoryHome.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/amenFactoryHome.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/hqHome.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/hqHome.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/wakeneFactoryHome.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/wakeneFactoryHome.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/report.route.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/report.route.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,7 +29,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -30,7 +39,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/mikyge2/Subscription_Tracker.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/mikyge2/Factory_Report.git&quot;,
     &quot;accountId&quot;: &quot;8e6bfccb-ec8d-4202-ab19-0cf69888de3f&quot;
   }
 }</component>
@@ -52,7 +61,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/mikege2/Documents/ReportingMIG/frontend&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/mikege2/Documents/ReportingMIG/models&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -70,8 +79,8 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/frontend" />
       <recent name="$PROJECT_DIR$/models" />
+      <recent name="$PROJECT_DIR$/frontend" />
       <recent name="$PROJECT_DIR$/.." />
       <recent name="$PROJECT_DIR$" />
     </key>
@@ -97,6 +106,8 @@
       <workItem from="1746879609135" duration="84046000" />
       <workItem from="1747895386340" duration="9698000" />
       <workItem from="1747905836860" duration="585000" />
+      <workItem from="1748494617009" duration="19862000" />
+      <workItem from="1752140498581" duration="29000" />
     </task>
     <task id="LOCAL-00001" summary="Initial Loading to Github">
       <option name="closed" value="true" />
@@ -122,7 +133,39 @@
       <option name="project" value="LOCAL" />
       <updated>1747905144526</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Try">
+      <option name="closed" value="true" />
+      <created>1747913100179</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1747913100179</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Initial Upload">
+      <option name="closed" value="true" />
+      <created>1747913710372</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1747913710372</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Initial change">
+      <option name="closed" value="true" />
+      <created>1747913777939</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1747913777939</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Excel Download. Include Reporter Name and Plant Report.">
+      <option name="closed" value="true" />
+      <created>1747919506409</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1747919506409</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -147,6 +190,10 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial Loading to Github" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial Loading to Github" />
+    <MESSAGE value="Try" />
+    <MESSAGE value="Initial Upload" />
+    <MESSAGE value="Initial change" />
+    <MESSAGE value="Excel Download. Include Reporter Name and Plant Report." />
+    <option name="LAST_COMMIT_MESSAGE" value="Excel Download. Include Reporter Name and Plant Report." />
   </component>
 </project>

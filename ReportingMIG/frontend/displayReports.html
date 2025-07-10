@@ -578,14 +578,13 @@
             const result = await response.json();
 
             if (result.success && result.data.length > 0) {
-                const report = result.data[0];
-
                 const headers = [
                     ["Date", "Production", "", "", "", "Sales", "", "", "", "Unit Price", "", "", "", "Problem Occurred", "Solution Taken"],
                     ["", "360ml", "600ml", "1L", "2L", "360ml", "600ml", "1L", "2L", "360ml", "600ml", "1L", "2L", "", ""]
                 ];
 
-                const row = [
+                // Create rows for each report
+                const rows = result.data.map(report => [
                     new Date(report.date).toLocaleDateString(),
                     report.production["360ml"],
                     report.production["600ml"],
@@ -601,22 +600,22 @@
                     report.unitPrice["2L"],
                     report.problemOccurred || "None",
                     report.solutionTaken || "None"
-                ];
+                ]);
 
-                const sheetData = [...headers, row];
+                const sheetData = [...headers, ...rows];
                 const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
 
-                // Define merged cells
+                // Define merged cells for headers
                 worksheet["!merges"] = [
                     { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } },
-                    { smaster: { r: 0, c: 1 }, e: { r: 0, c: 4 } },
+                    { s: { r: 0, c: 1 }, e: { r: 0, c: 4 } },
                     { s: { r: 0, c: 5 }, e: { r: 0, c: 8 } },
                     { s: { r: 0, c: 9 }, e: { r: 0, c: 12 } },
                     { s: { r: 0, c: 13 }, e: { r: 1, c: 13 } },
                     { s: { r: 0, c: 14 }, e: { r: 1, c: 14 } }
                 ];
 
-                // Apply styles: borders & bold headers
+                // Style cells with borders and header boldness
                 const borderStyle = {
                     top: { style: "thin" },
                     bottom: { style: "thin" },
@@ -627,11 +626,11 @@
                 const range = XLSX.utils.decode_range(worksheet["!ref"]);
                 for (let R = range.s.r; R <= range.e.r; ++R) {
                     for (let C = range.s.c; C <= range.e.c; ++C) {
-                        const cell_address = { r: R, c: C };
-                        const cell_ref = XLSX.utils.encode_cell(cell_address);
-                        if (!worksheet[cell_ref]) continue;
+                        const cellAddress = { r: R, c: C };
+                        const cellRef = XLSX.utils.encode_cell(cellAddress);
+                        if (!worksheet[cellRef]) continue;
 
-                        worksheet[cell_ref].s = {
+                        worksheet[cellRef].s = {
                             border: borderStyle,
                             alignment: { vertical: "center", horizontal: "center", wrapText: true },
                             font: R < 2 ? { bold: true } : {}
@@ -639,15 +638,13 @@
                     }
                 }
 
-                worksheet["!cols"] = Array(15).fill({ wch: 16 }); // set column width
+                worksheet["!cols"] = Array(15).fill({ wch: 16 }); // Set column widths
 
-                // Create workbook
+                // Create and export workbook
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, "User Report");
-
-                // Filename with date
                 const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-                const reporterName=localStorage.getItem('name').slice(1, -1);
+                const reporterName = localStorage.getItem('name').slice(1, -1);
                 const filename = `${reporterName}_Reports_Till_${today}.xlsx`;
 
                 XLSX.writeFile(workbook, filename, { cellStyles: true });
@@ -659,7 +656,10 @@
             alert("Failed to fetch report.");
         }
     }
+
     window.toggleEdit = toggleEdit;
+    window.showPopup = showPopup;
+    window.closePopup=closePopup;
 </script>
 </body>
 </html>

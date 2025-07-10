@@ -229,6 +229,31 @@
             display: none;
         }
 
+        .top-right {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #ffc72c;
+            color: #062b59;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            z-index: 2;
+            white-space: nowrap;
+            font-size: 0.9rem;
+
+        }
+
+        .top-right:hover {
+            background-color: #ffb520;
+        }
+
         @media screen and (max-width: 768px) {
             .edit-input {
                 width: 50% !important;
@@ -242,6 +267,10 @@
     </style>
 </head>
 <body>
+<button id="downloadExcelButton" class="top-right">
+    <i class="fas fa-history"></i>
+    Download Sheet Format
+</button>
 <div class="card" id="introCard">
     <h2>Select Plant</h2>
     <button class="btn" id="btnAmen">Amen Natural Plc</button>
@@ -262,6 +291,7 @@
         </div>
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
     document.querySelectorAll('.edit-input[type="date"]').forEach(input => {
         const today = new Date().toISOString().split('T')[0];
@@ -287,6 +317,7 @@
 
         document.getElementById('introCard').style.display = 'none';
         document.getElementById('reportContainer').style.display = 'block';
+
         try {
             const token = localStorage.getItem('authToken');
             const response = await fetch(`http://localhost:5500/api/v1/reports/plant/${plant}`, {
@@ -300,13 +331,15 @@
             const data = await response.json();
 
             if (data.success && data.data.length > 0) {
+                document.getElementById('downloadExcelButton').style.display = 'flex';
+                document.getElementById('downloadExcelButton').textContent = `Download ${plant} Reports`;
                 renderReports(data.data);
             } else if (response.status ===429){
                 console.error("You are making too many requests slow down");
                 showPopup(`❌ Too Fast`, `You are making too many requests slow down`, "Close");
             }else {
                 console.error("No reports found or data format incorrect.");
-                showPopup(`❌ Empty`, `You have not made any Reports`, "Make a Report");
+                showPopup(`❌ Empty`, `No Reports for ${plant}`, "Go Back");
             }
         } catch (error) {
             console.error("Error fetching reports:", error);
@@ -591,8 +624,8 @@
                 deleteReport(id);
                 popButtonElement.style.backgroundColor = '#ffc72c';
                 popButtonElement.style.color = '#062b59';
-            } else if(popButton==="Go Back" || popButton==="Make a Report"){
-                window.location.href = "/amenFactoryHome.html";
+            } else if(popButton==="Go Back"){
+                window.location.href = "/hqHome.html";
             } else if(popButton==="Save"){
                 saveReport(findCardButton, id);
             }
@@ -615,6 +648,127 @@
     document.getElementById('btnPlast').addEventListener('click', () => fetchReports('Plast'));
     document.getElementById('btnWakene').addEventListener('click', () => fetchReports('Wakene'));
     document.getElementById('btnExport').addEventListener('click', () => fetchReports('Export'));
+
+    const downloadExcelButton= document.getElementById("downloadExcelButton");
+    downloadExcelButton.addEventListener("click", () => {
+        if(downloadExcelButton.textContent === "Download Amen Reports"){
+            downloadExcelButton.addEventListener("click", fetchAndDownloadExcel('Amen'));
+        }else if (downloadExcelButton.textContent === "Download Plast Reports"){
+            downloadExcelButton.addEventListener("click", fetchAndDownloadExcel('Plast'));
+        }else if (downloadExcelButton.textContent === "Download Wakene Reports"){
+            downloadExcelButton.addEventListener("click", fetchAndDownloadExcel('Wakene'));
+        }else if (downloadExcelButton.textContent === "Download Export Reports"){
+            downloadExcelButton.addEventListener("click", fetchAndDownloadExcel('Export'));
+        }
+    });
+
+    async function fetchAndDownloadExcel(plant) {
+        const userID = localStorage.getItem('userID');
+        const token = localStorage.getItem('authToken');
+        try {
+            const response = await fetch(`http://localhost:5500/api/v1/reports/plant/${plant}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success && result.data.length > 0) {
+                const headers = [
+                    ["Date", "Reporter Name", "Production", "", "", "", "Sales", "", "", "", "Unit Price", "", "", "", "Problem Occurred", "Solution Taken"],
+                    ["", "", "360ml", "600ml", "1L", "2L", "360ml", "600ml", "1L", "2L", "360ml", "600ml", "1L", "2L", "", ""]
+                ];
+
+                // Create rows for each report
+                const rows = result.data.map(report => [
+                    new Date(report.date).toLocaleDateString(),
+                    report.reporterName,
+                    report.production["360ml"],
+                    report.production["600ml"],
+                    report.production["1L"],
+                    report.production["2L"],
+                    report.sales["360ml"],
+                    report.sales["600ml"],
+                    report.sales["1L"],
+                    report.sales["2L"],
+                    report.unitPrice["360ml"],
+                    report.unitPrice["600ml"],
+                    report.unitPrice["1L"],
+                    report.unitPrice["2L"],
+                    report.problemOccurred || "None",
+                    report.solutionTaken || "None"
+                ]);
+
+                const sheetData = [...headers, ...rows];
+                const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+
+                // Auto-adjust column widths based on content length
+                const maxWidths = [];
+
+                // Loop through each row to calculate max content width per column
+                sheetData.forEach(row => {
+                    row.forEach((cell, i) => {
+                        const cellLength = cell ? cell.toString().length : 0;
+                        maxWidths[i] = Math.max(maxWidths[i] || 10, cellLength + 2); // +2 padding
+                    });
+                });
+
+                worksheet["!cols"] = maxWidths.map(wch => ({ wch }));
+
+                // Define merged cells for headers
+                worksheet["!merges"] = [
+                    { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // Date
+                    { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // Reporter
+                    { s: { r: 0, c: 2 }, e: { r: 0, c: 5 } }, // Production
+                    { s: { r: 0, c: 6 }, e: { r: 0, c: 9 } }, // Sales
+                    { s: { r: 0, c: 10 }, e: { r: 0, c: 13 } }, // Unit Price
+                    { s: { r: 0, c: 14 }, e: { r: 1, c: 14 } }, // Problem Occurred
+                    { s: { r: 0, c: 15 }, e: { r: 1, c: 15 } }  // Solution Taken
+                ];
+
+                // Style cells with borders and header boldness
+                const borderStyle = {
+                    top: { style: "thin" },
+                    bottom: { style: "thin" },
+                    left: { style: "thin" },
+                    right: { style: "thin" }
+                };
+
+                const range = XLSX.utils.decode_range(worksheet["!ref"]);
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const cellAddress = { r: R, c: C };
+                        const cellRef = XLSX.utils.encode_cell(cellAddress);
+                        if (!worksheet[cellRef]) continue;
+
+                        worksheet[cellRef].s = {
+                            border: borderStyle,
+                            alignment: { vertical: "center", horizontal: "center", wrapText: true },
+                            font: R < 2 ? { bold: true } : {}
+                        };
+                    }
+                }
+
+
+                // Create and export workbook
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "User Report");
+                const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+                const reporterName = localStorage.getItem('name').slice(1, -1);
+                const filename = `${plant}_Reports_Till_${today}.xlsx`;
+
+                XLSX.writeFile(workbook, filename, { cellStyles: true });
+            } else {
+                showPopup(`❌ Empty Report`, `No Report for Amen`, "Go Back");
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+            alert("Failed to fetch report.");
+        }
+    }
 
 </script>
 </body>
