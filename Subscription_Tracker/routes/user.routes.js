@@ -1,14 +1,35 @@
-import {Router} from 'express';
-import authorize from "../middleware/auth.middleware.js";
-import {getUser, getUsers} from "../controllers/user.controller.js";
-const userRouter = Router();
-userRouter.get('/', getUsers);
-userRouter.get('/:id', authorize, getUser);
-userRouter.post('/', (req, res) =>
-    res.send({title: "CREATE NEW USER"}));
-userRouter.put('/:id', (req, res) =>
-    res.send({title: "UPDATE USER by ID"}));
-userRouter.delete('/:id', (req, res) =>
-    res.send({title: "DELETE USER by ID"}));
+// Import the Router function from Express to create a modular route handler
+import { Router } from 'express';
 
+// Import authorization middleware to protect specific routes
+import authorize from "../middleware/auth.middleware.js";
+
+// Import user-related controller functions
+import {
+    deleteUser,
+    getUser,
+    getUsers,
+    updateUser
+} from "../controllers/user.controller.js";
+
+// Create a new router instance for user routes
+const userRouter = Router();
+
+// Public route: Get all users
+// No authentication required
+userRouter.get('/', getUsers);
+
+// Protected route: Get a single user by ID
+// Requires authorization (e.g., valid token/session)
+userRouter.get('/:id', authorize, getUser);
+
+// Protected route: Update a user by ID
+// Requires authorization
+userRouter.put('/:id', authorize, updateUser);
+
+// Protected route: Delete a user by ID
+// Requires authorization
+userRouter.delete('/:id', authorize, deleteUser);
+
+// Export the router to be used in the main application
 export default userRouter;

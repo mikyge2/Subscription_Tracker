@@ -1,10 +1,14 @@
-import { Client as WorkflowClient} from '@upstash/workflow';
+// Import the WorkflowClient class from Upstash Workflow SDK
+import { Client as WorkflowClient } from '@upstash/workflow';
 
-import { QSTASH_TOKEN, QSTASH_URI} from "./env.js";
+// Import QStash token and URI from environment variables
+import { QSTASH_TOKEN, QSTASH_URI } from "./env.js";
 
-export const workflowClient = new WorkflowClient( {
-    baseUrl: QSTASH_URI,
-    token: QSTASH_TOKEN,
+// Create a new instance of WorkflowClient with the QStash base URL and token for authentication
+export const workflowClient = new WorkflowClient({
+    baseUrl: QSTASH_URI, // The endpoint for QStash workflow API
+    token: QSTASH_TOKEN, // Auth token to authorize requests
 });
 
+// Export the workflow client instance to be used when triggering workflows
 export default workflowClient;
