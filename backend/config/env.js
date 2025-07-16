@@ -2,7 +2,7 @@
 import { config } from 'dotenv';
 
 // Load environment variables from a file based on current NODE_ENV
-// For example, if NODE_ENV=development, it loads from '.env.development.local'
+// For example, if NODE_ENV=development, it loads from '..env.development.local'
 // Defaults to 'development' if NODE_ENV is not set
 config({ path: `.env.${process.env.NODE_ENV || 'development'}.local` });
 
