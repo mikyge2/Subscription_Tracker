@@ -16,7 +16,7 @@ export const {
     JWT_Expires_IN, // JWT token expiration time
     ARCJET_KEY,     // Arcjet API key for security services
     ARCJET_ENV,     // Arcjet environment variable (optional)
-    QSTASH_URI,     // QStash endpoint URI
+    QSTASH_URL,     // QStash endpoint URI
     QSTASH_TOKEN,   // QStash authorization token
     EMAIL_PASSWORD  // Password for email sending service
 } = process.env;
