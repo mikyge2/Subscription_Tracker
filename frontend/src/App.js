@@ -132,8 +132,8 @@ const SubscriptionTracker = () => {
                 apiCall(`/subscriptions/upcoming-user-renewals/${userId}`)
             ]);
 
-            setSubscriptions(subsResponse.subscriptions || []);
-            setUpcomingRenewals(renewalsResponse.renewals || []);
+            setSubscriptions(subsResponse.data || []);
+            setUpcomingRenewals(renewalsResponse.data || []);
         } catch (err) {
             console.error('Error loading user data:', err);
             setError('Failed to load subscription data');

@@ -1,7 +1,7 @@
 import Subscription from '../models/subsciption.model.js';
 import workflowClient from "../config/upstash.js";
-import { SERVER_URL } from "../config/env.js";
-import User from "../models/user.model.js";
+import { SERVER_URL, QSTASH_TOKEN } from "../config/env.js";
+import { Client } from "@upstash/qstash";
 
 /**
  * Create a new subscription for the authenticated user
@@ -14,22 +14,39 @@ export const createSubscription = async (req, res, next) => {
             ...req.body,
             user: req.user._id,
         });
-        console.log(`${SERVER_URL}/api/v1/workflows/subscription/reminder`);
-        // Trigger an Upstash workflow to send reminders related to this subscription
-        const { workflowRunId } = await workflowClient.trigger({
+        if(process.env.NODE_ENV==='development'){
+            // Trigger an Upstash workflow to send reminders related to this subscription for local development
+            const { workflowRunId } = await workflowClient.trigger({
+                url: `${SERVER_URL}/api/v1/workflows/subscription/reminder`,
+                body: {
+                    subscriptionId: subscription.id,
+                },
+                headers: {
+                    'content-type': 'application/json',
+                },
+                retries: 0,
+            });
 
-            url: `${SERVER_URL}/api/v1/workflows/subscription/reminder`,
-            body: {
-                subscriptionId: subscription.id,
-            },
-            headers: {
-                'content-type': 'application/json',
-            },
-            retries: 0,
-        });
+            // Respond with the created subscription and workflow ID for local development
+            res.status(201).json({ success: true, data: { subscription, workflowRunId } });
+        }else if(process.env.NODE_ENV==='production'){
+            // Trigger an Upstash workflow to send reminders related to this subscription for production
+            const qstash = new Client({
+                token: QSTASH_TOKEN,
+            });
 
-        // Respond with the created subscription and workflow ID
-        res.status(201).json({ success: true, data: { subscription, workflowRunId } });
+            const response = await qstash.publish({
+                url: `${SERVER_URL}/api/v1/workflows/subscription/reminder`,
+                body: JSON.stringify({
+                        subscriptionId: subscription.id,
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            // Respond with the created subscription and message ID for local development
+            res.status(201).json({ success: true, data: { subscription, messageId: response.messageId } });
+        }
     } catch (error) {
         next(error);
     }

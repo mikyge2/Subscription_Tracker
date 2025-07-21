@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 // Import the Express framework
 import express from 'express';
 
@@ -30,7 +33,7 @@ const app = express();
 
 // Configure and use CORS to allow frontend (e.g., React app) to communicate with backend
 app.use(cors({
-    origin: ['http://localhost:3000'], // Frontend origin
+    origin: ['http://localhost:3000', 'http://192.168.100.227:3000', 'https://subs-tracker-steel.vercel.app/'], // Frontend origin
     credentials: true,                 // Allow cookies/credentials to be sent
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
