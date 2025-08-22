@@ -169,7 +169,7 @@ const SubscriptionTracker = () => {
         setError('');
 
         try {
-            await apiCall('/auth/sign-up/', 'POST', authForm);
+            await apiCall('/auth/sign-up', 'POST', authForm);
             setSuccess('Account created successfully! Please sign in.');
             setCurrentView('login');
             setAuthForm({ name: '', email: '', password: '' });
