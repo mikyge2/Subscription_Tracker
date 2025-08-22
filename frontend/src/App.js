@@ -238,7 +238,7 @@ const SubscriptionTracker = () => {
         setError('');
 
         try {
-            await apiCall('/subscriptions/', 'POST', {
+            await apiCall('/subscriptions', 'POST', {
                 ...subscriptionForm,
                 userId: currentUser._id
             });
