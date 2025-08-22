@@ -189,7 +189,7 @@ const SubscriptionTracker = () => {
         setError('');
 
         try {
-            const response = await apiCall('/auth/sign-in/', 'POST', {
+            const response = await apiCall('/auth/sign-in', 'POST', {
                 email: authForm.email,
                 password: authForm.password
             });
