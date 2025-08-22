@@ -1,4 +1,8 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 // Global variable to store the cached connection
 let cachedConnection = null;
@@ -14,8 +18,8 @@ const connectToDatabase = async () => {
   }
 
   try {
-    // Get DB URI from environment variables
-    const DB_URI = process.env.DB_URI;
+    // Get DB URI from environment variables with fallback
+    const DB_URI = process.env.DB_URI || process.env.MONGODB_URI;
     
     if (!DB_URI) {
       throw new Error('MongoDB URI is missing from environment variables');
