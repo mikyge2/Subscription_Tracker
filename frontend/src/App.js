@@ -13,7 +13,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 
-const API_BASE = 'https://5d8032af9b7e.ngrok-free.app/api/v1';
+const API_BASE = process.env.REACT_APP_BACKEND_URL || '/api';
 
 const SubscriptionTracker = () => {
     const [currentUser, setCurrentUser] = useState(null);
