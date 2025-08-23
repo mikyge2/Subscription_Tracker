@@ -10,10 +10,6 @@ const signInHandler = async (req, res) => {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  // Start a new mongoose session and transaction
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     // Extract email and password from request body
     const { email, password } = req.body;
@@ -56,10 +52,6 @@ const signInHandler = async (req, res) => {
     // Generate JWT token for the authenticated user
     const token = jwt.sign({ userID: user._id }, JWT_SECRET, { expiresIn: JWT_Expires_IN });
 
-    // Commit transaction
-    await session.commitTransaction();
-    session.endSession();
-
     // Send success response with user data and token
     res.status(200).json({
       success: true,
@@ -76,9 +68,6 @@ const signInHandler = async (req, res) => {
       }
     });
   } catch (error) {
-    // Abort transaction and end session on error
-    await session.abortTransaction();
-    session.endSession();
     // Handle error
     return handleError(error, res);
   }
