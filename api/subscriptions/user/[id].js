@@ -3,6 +3,8 @@ import Subscription from '../../../backend/models/subsciption.model.js';
 
 const userSubscriptionsHandler = async (req, res) => {
   try {
+    console.log('req.query:', req.query);
+    console.log('req.params:', req.params);
     const { id } = req.query;
 
     if (!id) {
