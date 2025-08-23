@@ -169,10 +169,22 @@ const SubscriptionTracker = () => {
         setError('');
 
         try {
-            await apiCall('/auth/sign-up', 'POST', authForm);
-            setSuccess('Account created successfully! Please sign in.');
-            setCurrentView('login');
-            setAuthForm({ name: '', email: '', password: '' });
+            const response = await apiCall('/auth/sign-up', 'POST', authForm);
+            
+            // Auto-login user after successful signup
+            if (response.data.token && response.data.user) {
+                localStorage.setItem('authToken', response.data.token);
+                localStorage.setItem('currentUser', JSON.stringify(response.data.user));
+                setCurrentUser(response.data.user);
+                setCurrentView('dashboard');
+                setAuthForm({ name: '', email: '', password: '' });
+                setSuccess('Account created successfully! Welcome!');
+                loadUserData(response.data.user._id);
+            } else {
+                setSuccess('Account created successfully! Please sign in.');
+                setCurrentView('login');
+                setAuthForm({ name: '', email: '', password: '' });
+            }
         } catch (err) {
             setError(err.message);
         } finally {
