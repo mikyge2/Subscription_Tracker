@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { createHandler, handleError } from '../_lib/middleware.js';
