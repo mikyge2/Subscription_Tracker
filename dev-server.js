@@ -73,6 +73,10 @@ const loadApiRoutes = async () => {
         // Handle all HTTP methods
         app.all(`/api${route}`, async (req, res) => {
           try {
+            // Map Express route params to query for serverless compatibility
+            if (req.params) {
+              req.query = { ...req.query, ...req.params };
+            }
             await handler(req, res);
           } catch (error) {
             console.error(`Error in route ${route}:`, error);
