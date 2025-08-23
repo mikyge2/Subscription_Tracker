@@ -74,8 +74,10 @@ const loadApiRoutes = async () => {
         app.all(`/api${route}`, async (req, res) => {
           try {
             // Map Express route params to query for serverless compatibility
-            if (req.params) {
-              Object.assign(req.query, req.params);
+            if (req.params && Object.keys(req.params).length > 0) {
+              for (const [key, value] of Object.entries(req.params)) {
+                req.query[key] = value;
+              }
             }
             await handler(req, res);
           } catch (error) {
