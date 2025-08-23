@@ -3,11 +3,14 @@ import Subscription from '../../../backend/models/subsciption.model.js';
 
 const userSubscriptionsHandler = async (req, res) => {
   try {
-    console.log('req.query:', req.query);
-    console.log('req.params:', req.params);
-    const { id } = req.query;
+    // Get ID from either query or params (for compatibility between Vercel and Express)
+    const { id } = req.query || {};
+    const paramId = req.params?.id;
+    const userId = id || paramId;
+    
+    console.log('Looking for user ID:', { id, paramId, userId, query: req.query, params: req.params });
 
-    if (!id) {
+    if (!userId) {
       const error = new Error('User ID is required');
       error.statusCode = 400;
       throw error;
