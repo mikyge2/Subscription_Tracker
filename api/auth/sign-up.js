@@ -10,10 +10,6 @@ const signUpHandler = async (req, res) => {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  // Start a new mongoose session and transaction for atomic operations
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     // Extract name, email, and password from the request body
     const { name, email, password } = req.body;
@@ -38,8 +34,8 @@ const signUpHandler = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user document with hashed password inside the transaction session
-    const newUser = await User.create([{ name, email, password: hashedPassword }], { session });
+    // Create a new user document with hashed password
+    const newUser = await User.create({ name, email, password: hashedPassword });
 
     // Get JWT configuration from environment
     const JWT_SECRET = process.env.JWT_SECRET;
@@ -52,12 +48,7 @@ const signUpHandler = async (req, res) => {
     }
 
     // Create a JWT token for the newly created user (for authentication)
-    const token = jwt.sign({ userID: newUser[0]._id }, JWT_SECRET, { expiresIn: JWT_Expires_IN });
-
-    // Commit the transaction to save the user permanently
-    await session.commitTransaction();
-    // End the mongoose session
-    session.endSession();
+    const token = jwt.sign({ userID: newUser._id }, JWT_SECRET, { expiresIn: JWT_Expires_IN });
 
     // Send success response with the new user data and JWT token
     res.status(201).json({
@@ -65,20 +56,17 @@ const signUpHandler = async (req, res) => {
       message: "User Signed Up Successfully",
       data: {
         user: {
-          _id: newUser[0]._id,
-          name: newUser[0].name,
-          email: newUser[0].email,
-          createdAt: newUser[0].createdAt,
-          updatedAt: newUser[0].updatedAt
+          _id: newUser._id,
+          name: newUser.name,
+          email: newUser.email,
+          createdAt: newUser.createdAt,
+          updatedAt: newUser.updatedAt
         },
         token
       }
     });
 
   } catch (error) {
-    // If any error occurs, abort the transaction and end the session
-    await session.abortTransaction();
-    session.endSession();
     // Handle the error
     return handleError(error, res);
   }
