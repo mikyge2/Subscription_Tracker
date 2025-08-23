@@ -29,14 +29,14 @@ const userSubscriptionsHandler = async (req, res) => {
     req.user = authResult.user;
 
     // Check if the authenticated user matches the requested user ID
-    if (req.user.id !== id) {
+    if (req.user.id !== userId) {
       const error = new Error('You are not the owner of this account');
       error.statusCode = 401;
       throw error;
     }
 
     // Find subscriptions by user ID
-    const subscriptions = await Subscription.find({ user: id });
+    const subscriptions = await Subscription.find({ user: userId });
 
     res.status(200).json({ 
       success: true, 
