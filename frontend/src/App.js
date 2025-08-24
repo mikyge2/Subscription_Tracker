@@ -13,7 +13,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 
-const API_BASE = process.env.REACT_APP_BACKEND_URL || '/api';
+const API_BASE = 'https://5d8032af9b7e.ngrok-free.app/api/v1';
 
 const SubscriptionTracker = () => {
     const [currentUser, setCurrentUser] = useState(null);
@@ -169,22 +169,10 @@ const SubscriptionTracker = () => {
         setError('');
 
         try {
-            const response = await apiCall('/auth/sign-up', 'POST', authForm);
-            
-            // Auto-login user after successful signup
-            if (response.data.token && response.data.user) {
-                localStorage.setItem('authToken', response.data.token);
-                localStorage.setItem('currentUser', JSON.stringify(response.data.user));
-                setCurrentUser(response.data.user);
-                setCurrentView('dashboard');
-                setAuthForm({ name: '', email: '', password: '' });
-                setSuccess('Account created successfully! Welcome!');
-                loadUserData(response.data.user._id);
-            } else {
-                setSuccess('Account created successfully! Please sign in.');
-                setCurrentView('login');
-                setAuthForm({ name: '', email: '', password: '' });
-            }
+            await apiCall('/auth/sign-up/', 'POST', authForm);
+            setSuccess('Account created successfully! Please sign in.');
+            setCurrentView('login');
+            setAuthForm({ name: '', email: '', password: '' });
         } catch (err) {
             setError(err.message);
         } finally {
@@ -201,7 +189,7 @@ const SubscriptionTracker = () => {
         setError('');
 
         try {
-            const response = await apiCall('/auth/sign-in', 'POST', {
+            const response = await apiCall('/auth/sign-in/', 'POST', {
                 email: authForm.email,
                 password: authForm.password
             });
@@ -250,7 +238,7 @@ const SubscriptionTracker = () => {
         setError('');
 
         try {
-            await apiCall('/subscriptions', 'POST', {
+            await apiCall('/subscriptions/', 'POST', {
                 ...subscriptionForm,
                 userId: currentUser._id
             });
