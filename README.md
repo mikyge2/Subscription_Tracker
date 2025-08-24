@@ -1,6 +1,6 @@
 # 📆 Subscription Tracker API
 
-A backend API for managing and tracking user subscriptions, built with **Node.js**, **Express.js**, and **MongoDB**. The project is inspired by the [Complete Backend Course](https://youtu.be/rOpEN1JDaD0) and further improved using **ChatGPT** for cleaner code and inline documentation.
+A backend API for managing and tracking user subscriptions, built with **Node.js**, **Express.js**, and **MongoDB**. The project is inspired by the [Complete Backend Course](https://youtu.be/rOpEN1JDaD0) and further improved using **ChatGPT** for cleaner code and inline documentation. The frontend is fully via AI
 
 ---
 
