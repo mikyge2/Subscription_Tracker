@@ -102,7 +102,10 @@ const SubscriptionTracker = () => {
 
     const [userEditForm, setUserEditForm] = useState({
         name: '',
-        email: ''
+        email: '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
     });
 
     const [subscriptionForm, setSubscriptionForm] = useState({
@@ -228,7 +231,7 @@ const SubscriptionTracker = () => {
                 const parsedUser = JSON.parse(user);
                 setCurrentUser(parsedUser);
                 setCurrentView('dashboard');
-                setUserEditForm({ name: parsedUser.name, email: parsedUser.email });
+                setUserEditForm({ name: parsedUser.name, email: parsedUser.email, currentPassword: '', newPassword: '', confirmPassword: '' });
                 loadUserData(parsedUser._id);
             } catch (err) {
                 console.error('Error parsing stored user:', err);
@@ -278,7 +281,7 @@ const SubscriptionTracker = () => {
             }
 
             setCurrentUser(response.data.user);
-            setUserEditForm({ name: response.data.user.name, email: response.data.user.email });
+            setUserEditForm({ name: response.data.user.name, email: response.data.user.email, currentPassword: '', newPassword: '', confirmPassword: '' });
             setCurrentView('dashboard');
             setAuthForm({ name: '', email: '', password: '' });
             loadUserData(response.data.user._id);
@@ -311,12 +314,54 @@ const SubscriptionTracker = () => {
         setLoading(true);
 
         try {
-            const response = await apiCall(`/users/${currentUser._id}`, 'PUT', userEditForm);
-            const updatedUser = { ...currentUser, ...userEditForm };
+            // Prepare update data
+            const updateData = {
+                name: userEditForm.name,
+                email: userEditForm.email
+            };
+
+            // If password fields are filled, validate and include them
+            if (userEditForm.newPassword || userEditForm.currentPassword) {
+                if (!userEditForm.currentPassword) {
+                    showToast('Current password is required to change password', 'error');
+                    setLoading(false);
+                    return;
+                }
+                if (!userEditForm.newPassword) {
+                    showToast('New password is required', 'error');
+                    setLoading(false);
+                    return;
+                }
+                if (userEditForm.newPassword.length < 6) {
+                    showToast('New password must be at least 6 characters', 'error');
+                    setLoading(false);
+                    return;
+                }
+                if (userEditForm.newPassword !== userEditForm.confirmPassword) {
+                    showToast('Password confirmation does not match', 'error');
+                    setLoading(false);
+                    return;
+                }
+
+                updateData.currentPassword = userEditForm.currentPassword;
+                updateData.newPassword = userEditForm.newPassword;
+            }
+
+            const response = await apiCall(`/users/${currentUser._id}`, 'PUT', updateData);
+            const updatedUser = { ...currentUser, name: userEditForm.name, email: userEditForm.email };
             setCurrentUser(updatedUser);
             localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            
+            // Reset password fields
+            setUserEditForm({
+                ...userEditForm,
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: ''
+            });
+            
             setShowUserModal(false);
-            showToast('Profile updated successfully!', 'success');
+            showToast(userEditForm.newPassword ? 'Profile and password updated successfully!' : 'Profile updated successfully!', 'success');
         } catch (err) {
             showToast(err.message, 'error');
         } finally {
@@ -406,7 +451,18 @@ const SubscriptionTracker = () => {
             setLoading(true);
             try {
                 await apiCall(`/subscriptions/cancel/${id}`, 'PUT');
+                
+                // Immediately update the local state to reflect cancellation
+                setSubscriptions(prevSubs => 
+                    prevSubs.map(sub => 
+                        sub._id === id 
+                            ? { ...sub, status: 'cancelled', cancelled: true, active: false }
+                            : sub
+                    )
+                );
+                
                 showToast('Subscription cancelled successfully!', 'success');
+                // Reload data to ensure we have the latest state from server
                 loadUserData(currentUser._id);
             } catch (err) {
                 showToast(err.message, 'error');
@@ -418,9 +474,22 @@ const SubscriptionTracker = () => {
         showConfirmDialog(cancelAction, 'Are you sure you want to cancel this subscription?');
     };
 
-    // Separate active and cancelled subscriptions
-    const activeSubscriptions = subscriptions.filter(sub => sub.status !== 'cancelled');
-    const cancelledSubscriptions = subscriptions.filter(sub => sub.status === 'cancelled');
+    // Separate active and cancelled subscriptions - check multiple possible status indicators
+    const activeSubscriptions = subscriptions.filter(sub => 
+        sub.status !== 'cancelled' && 
+        sub.status !== 'canceled' && 
+        !sub.cancelled && 
+        !sub.canceled &&
+        sub.active !== false
+    );
+    
+    const cancelledSubscriptions = subscriptions.filter(sub => 
+        sub.status === 'cancelled' || 
+        sub.status === 'canceled' || 
+        sub.cancelled === true || 
+        sub.canceled === true ||
+        sub.active === false
+    );
 
     const calculateTotalCost = () => {
         return activeSubscriptions.reduce((total, sub) => {
@@ -920,6 +989,46 @@ const SubscriptionTracker = () => {
                         />
                     </div>
 
+                    <div className="border-t border-white/20 pt-4">
+                        <h4 className="text-white font-medium mb-3">Change Password (Optional)</h4>
+                        
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-gray-300 text-sm mb-2">Current Password</label>
+                                <input
+                                    type="password"
+                                    value={userEditForm.currentPassword}
+                                    onChange={(e) => setUserEditForm({...userEditForm, currentPassword: e.target.value})}
+                                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="Enter current password"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-300 text-sm mb-2">New Password</label>
+                                <input
+                                    type="password"
+                                    value={userEditForm.newPassword}
+                                    onChange={(e) => setUserEditForm({...userEditForm, newPassword: e.target.value})}
+                                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="Enter new password (min 6 characters)"
+                                    minLength={6}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-300 text-sm mb-2">Confirm New Password</label>
+                                <input
+                                    type="password"
+                                    value={userEditForm.confirmPassword}
+                                    onChange={(e) => setUserEditForm({...userEditForm, confirmPassword: e.target.value})}
+                                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="Confirm new password"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex space-x-4 pt-4">
                         <button
                             type="submit"
@@ -931,7 +1040,15 @@ const SubscriptionTracker = () => {
                         </button>
                         <button
                             type="button"
-                            onClick={() => setShowUserModal(false)}
+                            onClick={() => {
+                                setShowUserModal(false);
+                                setUserEditForm({
+                                    ...userEditForm,
+                                    currentPassword: '',
+                                    newPassword: '',
+                                    confirmPassword: ''
+                                });
+                            }}
                             className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
                         >
                             Cancel
