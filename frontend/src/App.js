@@ -13,7 +13,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 
-const API_BASE = 'https://subscriptiontracker-production-c3ff.up.railway.app';
+const API_BASE = 'https://subscriptiontracker-production-c3ff.up.railway.app/api/v1';
 
 const SubscriptionTracker = () => {
     const [currentUser, setCurrentUser] = useState(null);
