@@ -10,10 +10,69 @@ import {
     User,
     Bell,
     DollarSign,
-    RefreshCw
+    RefreshCw,
+    X,
+    Calendar,
+    AlertCircle,
+    CheckCircle
 } from 'lucide-react';
 
-const API_BASE = 'https://subscriptiontracker-production-c3ff.up.railway.app/api/v1';
+const API_BASE = 'https://5d8032af9b7e.ngrok-free.app/api/v1';
+
+// Custom Modal Component
+const Modal = ({ isOpen, onClose, children, title }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="relative bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-white">{title}</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-white transition-colors"
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+                {children}
+            </div>
+        </div>
+    );
+};
+
+// Notification Toast Component
+const Toast = ({ message, type = 'info', isVisible, onClose }) => {
+    if (!isVisible) return null;
+
+    const icons = {
+        success: <CheckCircle className="w-5 h-5" />,
+        error: <AlertCircle className="w-5 h-5" />,
+        info: <AlertCircle className="w-5 h-5" />
+    };
+
+    const colors = {
+        success: 'from-green-500/20 to-emerald-500/20 border-green-500/50 text-green-300',
+        error: 'from-red-500/20 to-rose-500/20 border-red-500/50 text-red-300',
+        info: 'from-blue-500/20 to-indigo-500/20 border-blue-500/50 text-blue-300'
+    };
+
+    return (
+        <div className="fixed top-4 right-4 z-50">
+            <div className={`bg-gradient-to-r ${colors[type]} border rounded-xl p-4 flex items-center space-x-3 shadow-2xl backdrop-blur-lg animate-pulse`}>
+                {icons[type]}
+                <span className="font-medium">{message}</span>
+                <button
+                    onClick={onClose}
+                    className="ml-2 text-gray-300 hover:text-white"
+                >
+                    <X className="w-4 h-4" />
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const SubscriptionTracker = () => {
     const [currentUser, setCurrentUser] = useState(null);
@@ -22,16 +81,28 @@ const SubscriptionTracker = () => {
     const [upcomingRenewals, setUpcomingRenewals] = useState([]);
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const [editingSubscription, setEditingSubscription] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
+
+    // Modal states
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [showRenewalsModal, setShowRenewalsModal] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null);
+
+    // Toast notification state
+    const [toast, setToast] = useState({ message: '', type: 'info', isVisible: false });
 
     // Form states
     const [authForm, setAuthForm] = useState({
         name: '',
         email: '',
         password: ''
+    });
+
+    const [userEditForm, setUserEditForm] = useState({
+        name: '',
+        email: ''
     });
 
     const [subscriptionForm, setSubscriptionForm] = useState({
@@ -44,18 +115,27 @@ const SubscriptionTracker = () => {
         payment: 'Credit Card'
     });
 
+    // Show toast notification
+    const showToast = (message, type = 'info') => {
+        setToast({ message, type, isVisible: true });
+    };
+
+    const hideToast = () => {
+        setToast({ ...toast, isVisible: false });
+    };
+
     // Form validation
     const validateAuthForm = () => {
         if (currentView === 'signup' && !authForm.name.trim()) {
-            setError('Full name is required');
+            showToast('Full name is required', 'error');
             return false;
         }
         if (!authForm.email.trim()) {
-            setError('Email is required');
+            showToast('Email is required', 'error');
             return false;
         }
         if (!authForm.password || authForm.password.length < 6) {
-            setError('Password must be at least 6 characters');
+            showToast('Password must be at least 6 characters', 'error');
             return false;
         }
         return true;
@@ -63,15 +143,15 @@ const SubscriptionTracker = () => {
 
     const validateSubscriptionForm = () => {
         if (!subscriptionForm.name.trim()) {
-            setError('Service name is required');
+            showToast('Service name is required', 'error');
             return false;
         }
         if (!subscriptionForm.price || subscriptionForm.price <= 0) {
-            setError('Valid price is required');
+            showToast('Valid price is required', 'error');
             return false;
         }
         if (!subscriptionForm.startDate) {
-            setError('Start date is required');
+            showToast('Start date is required', 'error');
             return false;
         }
         return true;
@@ -88,7 +168,6 @@ const SubscriptionTracker = () => {
                 },
             };
 
-            // Add auth token if available
             const token = localStorage.getItem('authToken');
             if (token) {
                 options.headers.Authorization = `Bearer ${token}`;
@@ -100,9 +179,7 @@ const SubscriptionTracker = () => {
 
             const response = await fetch(`${API_BASE}${endpoint}`, options);
 
-            // Handle different error types
             if (response.status === 401) {
-                // Unauthorized - redirect to login
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('currentUser');
                 setCurrentUser(null);
@@ -137,7 +214,7 @@ const SubscriptionTracker = () => {
             setUpcomingRenewals(renewalsResponse.data || []);
         } catch (err) {
             console.error('Error loading user data:', err);
-            setError('Failed to load subscription data');
+            showToast('Failed to load subscription data', 'error');
         }
     }, []);
 
@@ -151,6 +228,7 @@ const SubscriptionTracker = () => {
                 const parsedUser = JSON.parse(user);
                 setCurrentUser(parsedUser);
                 setCurrentView('dashboard');
+                setUserEditForm({ name: parsedUser.name, email: parsedUser.email });
                 loadUserData(parsedUser._id);
             } catch (err) {
                 console.error('Error parsing stored user:', err);
@@ -166,15 +244,14 @@ const SubscriptionTracker = () => {
         if (!validateAuthForm()) return;
 
         setLoading(true);
-        setError('');
 
         try {
             await apiCall('/auth/sign-up/', 'POST', authForm);
-            setSuccess('Account created successfully! Please sign in.');
+            showToast('Account created successfully! Please sign in.', 'success');
             setCurrentView('login');
             setAuthForm({ name: '', email: '', password: '' });
         } catch (err) {
-            setError(err.message);
+            showToast(err.message, 'error');
         } finally {
             setLoading(false);
         }
@@ -186,7 +263,6 @@ const SubscriptionTracker = () => {
         if (!validateAuthForm()) return;
 
         setLoading(true);
-        setError('');
 
         try {
             const response = await apiCall('/auth/sign-in/', 'POST', {
@@ -194,7 +270,6 @@ const SubscriptionTracker = () => {
                 password: authForm.password
             });
 
-            // Store token and user if API returns them
             if (response.data.token) {
                 localStorage.setItem('authToken', response.data.token);
             }
@@ -203,11 +278,13 @@ const SubscriptionTracker = () => {
             }
 
             setCurrentUser(response.data.user);
+            setUserEditForm({ name: response.data.user.name, email: response.data.user.email });
             setCurrentView('dashboard');
             setAuthForm({ name: '', email: '', password: '' });
             loadUserData(response.data.user._id);
+            showToast('Welcome back!', 'success');
         } catch (err) {
-            setError(err.message);
+            showToast(err.message, 'error');
         } finally {
             setLoading(false);
         }
@@ -219,13 +296,31 @@ const SubscriptionTracker = () => {
         } catch (err) {
             console.error('Sign out error:', err);
         } finally {
-            // Clear local storage and state regardless of API call result
             localStorage.removeItem('authToken');
             localStorage.removeItem('currentUser');
             setCurrentUser(null);
             setCurrentView('login');
             setSubscriptions([]);
             setUpcomingRenewals([]);
+            showToast('Signed out successfully', 'info');
+        }
+    };
+
+    const handleUpdateProfile = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const response = await apiCall(`/users/${currentUser._id}`, 'PUT', userEditForm);
+            const updatedUser = { ...currentUser, ...userEditForm };
+            setCurrentUser(updatedUser);
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            setShowUserModal(false);
+            showToast('Profile updated successfully!', 'success');
+        } catch (err) {
+            showToast(err.message, 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -235,19 +330,18 @@ const SubscriptionTracker = () => {
         if (!validateSubscriptionForm()) return;
 
         setLoading(true);
-        setError('');
 
         try {
             await apiCall('/subscriptions/', 'POST', {
                 ...subscriptionForm,
                 userId: currentUser._id
             });
-            setSuccess('Subscription added successfully!');
+            showToast('Subscription added successfully!', 'success');
             setShowAddForm(false);
             resetSubscriptionForm();
             loadUserData(currentUser._id);
         } catch (err) {
-            setError(err.message);
+            showToast(err.message, 'error');
         } finally {
             setLoading(false);
         }
@@ -259,61 +353,77 @@ const SubscriptionTracker = () => {
         if (!validateSubscriptionForm()) return;
 
         setLoading(true);
-        setError('');
 
         try {
             await apiCall(`/subscriptions/${editingSubscription._id}`, 'PUT', {
                 ...subscriptionForm,
                 userId: currentUser._id
             });
-            setSuccess('Subscription updated successfully!');
+            showToast('Subscription updated successfully!', 'success');
             setEditingSubscription(null);
             setShowAddForm(false);
             resetSubscriptionForm();
             loadUserData(currentUser._id);
         } catch (err) {
-            setError(err.message);
+            showToast(err.message, 'error');
         } finally {
             setLoading(false);
         }
+    };
+
+    const showConfirmDialog = (action, message) => {
+        setConfirmAction({ action, message });
+        setShowConfirmModal(true);
+    };
+
+    const handleConfirm = () => {
+        if (confirmAction) {
+            confirmAction.action();
+        }
+        setShowConfirmModal(false);
+        setConfirmAction(null);
     };
 
     const handleDeleteSubscription = async (id) => {
-        // Replace window.confirm with explicit confirmation
-        const shouldDelete = window.confirm('Are you sure you want to delete this subscription?'); // eslint-disable-line no-restricted-globals
-        if (!shouldDelete) return;
+        const deleteAction = async () => {
+            setLoading(true);
+            try {
+                await apiCall(`/subscriptions/${id}`, 'DELETE');
+                showToast('Subscription deleted successfully!', 'success');
+                loadUserData(currentUser._id);
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        setLoading(true);
-        try {
-            await apiCall(`/subscriptions/${id}`, 'DELETE');
-            setSuccess('Subscription deleted successfully!');
-            loadUserData(currentUser._id);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+        showConfirmDialog(deleteAction, 'Are you sure you want to delete this subscription?');
     };
 
     const handleCancelSubscription = async (id) => {
-        // Replace window.confirm with explicit confirmation
-        const shouldCancel = window.confirm('Are you sure you want to cancel this subscription?'); // eslint-disable-line no-restricted-globals
-        if (!shouldCancel) return;
+        const cancelAction = async () => {
+            setLoading(true);
+            try {
+                await apiCall(`/subscriptions/cancel/${id}`, 'PUT');
+                showToast('Subscription cancelled successfully!', 'success');
+                loadUserData(currentUser._id);
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        setLoading(true);
-        try {
-            await apiCall(`/subscriptions/cancel/${id}`, 'PUT');
-            setSuccess('Subscription cancelled successfully!');
-            loadUserData(currentUser._id);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+        showConfirmDialog(cancelAction, 'Are you sure you want to cancel this subscription?');
     };
 
+    // Separate active and cancelled subscriptions
+    const activeSubscriptions = subscriptions.filter(sub => sub.status !== 'cancelled');
+    const cancelledSubscriptions = subscriptions.filter(sub => sub.status === 'cancelled');
+
     const calculateTotalCost = () => {
-        return subscriptions.reduce((total, sub) => {
+        return activeSubscriptions.reduce((total, sub) => {
             const monthlyPrice = sub.frequency === 'yearly' ? sub.price / 12 : sub.price;
             return total + monthlyPrice;
         }, 0);
@@ -349,24 +459,15 @@ const SubscriptionTracker = () => {
         setShowAddForm(false);
         setEditingSubscription(null);
         resetSubscriptionForm();
-        setError('');
     };
 
-    // Clear messages after 3 seconds
+    // Auto-hide toast after 4 seconds
     useEffect(() => {
-        let timeoutId;
-        if (error || success) {
-            timeoutId = setTimeout(() => {
-                setError('');
-                setSuccess('');
-            }, 3000);
+        if (toast.isVisible) {
+            const timer = setTimeout(hideToast, 4000);
+            return () => clearTimeout(timer);
         }
-        return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
-    }, [error, success]);
+    }, [toast.isVisible]);
 
     if (currentView === 'login' || currentView === 'signup') {
         return (
@@ -388,18 +489,6 @@ const SubscriptionTracker = () => {
                             <h1 className="text-3xl font-bold text-white mb-2">SubsTracker</h1>
                             <p className="text-gray-300">Manage your subscriptions with style</p>
                         </div>
-
-                        {error && (
-                            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-sm">
-                                {error}
-                            </div>
-                        )}
-
-                        {success && (
-                            <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-300 text-sm">
-                                {success}
-                            </div>
-                        )}
 
                         <form onSubmit={currentView === 'login' ? handleSignIn : handleSignUp}>
                             <div className="space-y-4">
@@ -460,8 +549,6 @@ const SubscriptionTracker = () => {
                             <button
                                 onClick={() => {
                                     setCurrentView(currentView === 'login' ? 'signup' : 'login');
-                                    setError('');
-                                    setSuccess('');
                                 }}
                                 className="text-gray-300 hover:text-white transition-colors"
                             >
@@ -470,6 +557,8 @@ const SubscriptionTracker = () => {
                         </div>
                     </div>
                 </div>
+
+                <Toast {...toast} onClose={hideToast} />
             </div>
         );
     }
@@ -488,10 +577,13 @@ const SubscriptionTracker = () => {
                         </div>
 
                         <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-2 text-gray-300">
+                            <button
+                                onClick={() => setShowUserModal(true)}
+                                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
+                            >
                                 <User className="w-5 h-5" />
                                 <span>{currentUser?.name}</span>
-                            </div>
+                            </button>
                             <button
                                 onClick={handleSignOut}
                                 className="text-gray-300 hover:text-white transition-colors"
@@ -506,25 +598,13 @@ const SubscriptionTracker = () => {
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {error && (
-                    <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300">
-                        {error}
-                    </div>
-                )}
-
-                {success && (
-                    <div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg text-green-300">
-                        {success}
-                    </div>
-                )}
-
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-300 text-sm">Total Subscriptions</p>
-                                <p className="text-2xl font-bold text-white">{subscriptions.length}</p>
+                                <p className="text-gray-300 text-sm">Active Subscriptions</p>
+                                <p className="text-2xl font-bold text-white">{activeSubscriptions.length}</p>
                             </div>
                             <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
                                 <CreditCard className="w-6 h-6 text-blue-400" />
@@ -550,9 +630,12 @@ const SubscriptionTracker = () => {
                                 <p className="text-gray-300 text-sm">Upcoming Renewals</p>
                                 <p className="text-2xl font-bold text-white">{upcomingRenewals.length}</p>
                             </div>
-                            <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
+                            <button
+                                onClick={() => setShowRenewalsModal(true)}
+                                className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center hover:bg-purple-500/30 transition-colors"
+                            >
                                 <Bell className="w-6 h-6 text-purple-400" />
-                            </div>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -565,7 +648,6 @@ const SubscriptionTracker = () => {
                             setShowAddForm(true);
                             setEditingSubscription(null);
                             resetSubscriptionForm();
-                            setError('');
                         }}
                         className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:from-purple-600 hover:to-blue-600 transition-all"
                     >
@@ -675,9 +757,10 @@ const SubscriptionTracker = () => {
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-2 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-2 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                                     >
-                                        {loading ? <RefreshCw className="animate-spin w-5 h-5" /> : (editingSubscription ? 'Update' : 'Add')} Subscription
+                                        {loading && <RefreshCw className="animate-spin w-4 h-4" />}
+                                        <span>{editingSubscription ? 'Update' : 'Add'} Subscription</span>
                                     </button>
                                     <button
                                         type="button"
@@ -692,9 +775,9 @@ const SubscriptionTracker = () => {
                     </div>
                 )}
 
-                {/* Subscriptions Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {subscriptions.map((subscription) => (
+                {/* Active Subscriptions Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    {activeSubscriptions.map((subscription) => (
                         <div key={subscription._id} className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -744,16 +827,187 @@ const SubscriptionTracker = () => {
                     ))}
                 </div>
 
-                {subscriptions.length === 0 && (
-                    <div className="text-center py-12">
+                {activeSubscriptions.length === 0 && (
+                    <div className="text-center py-12 mb-8">
                         <div className="w-16 h-16 bg-gray-500/20 rounded-full mx-auto mb-4 flex items-center justify-center">
                             <CreditCard className="w-8 h-8 text-gray-400" />
                         </div>
-                        <p className="text-gray-300 text-lg">No subscriptions yet</p>
+                        <p className="text-gray-300 text-lg">No active subscriptions yet</p>
                         <p className="text-gray-500">Add your first subscription to get started</p>
                     </div>
                 )}
+
+                {/* Cancelled Subscriptions Section */}
+                {cancelledSubscriptions.length > 0 && (
+                    <div className="mt-12">
+                        <h2 className="text-2xl font-bold text-white mb-6">Cancelled Subscriptions</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {cancelledSubscriptions.map((subscription) => (
+                                <div key={subscription._id} className="relative bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10 opacity-75">
+                                    {/* CANCELLED Watermark */}
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="transform -rotate-12 text-red-500/30 text-4xl font-bold">
+                                            CANCELLED
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="relative z-10">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div>
+                                                <h3 className="text-lg font-bold text-gray-400 line-through">{subscription.name}</h3>
+                                                <p className="text-gray-500 text-sm capitalize">{subscription.category}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteSubscription(subscription._id)}
+                                                className="text-gray-500 hover:text-red-400 transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+
+                                        <div className="space-y-2 mb-4">
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-500">Price:</span>
+                                                <span className="text-gray-400 line-through">{subscription.currency} {subscription.price}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-500">Frequency:</span>
+                                                <span className="text-gray-400 capitalize line-through">{subscription.frequency}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-500">Payment:</span>
+                                                <span className="text-gray-400 line-through">{subscription.payment}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-red-500/20 text-red-400 py-2 rounded-lg text-center">
+                                            Cancelled
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </main>
+
+            {/* User Profile Modal */}
+            <Modal
+                isOpen={showUserModal}
+                onClose={() => setShowUserModal(false)}
+                title="User Profile"
+            >
+                <form onSubmit={handleUpdateProfile} className="space-y-4">
+                    <div>
+                        <label className="block text-gray-300 text-sm mb-2">Full Name</label>
+                        <input
+                            type="text"
+                            value={userEditForm.name}
+                            onChange={(e) => setUserEditForm({...userEditForm, name: e.target.value})}
+                            className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-gray-300 text-sm mb-2">Email</label>
+                        <input
+                            type="email"
+                            value={userEditForm.email}
+                            onChange={(e) => setUserEditForm({...userEditForm, email: e.target.value})}
+                            className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            required
+                        />
+                    </div>
+
+                    <div className="flex space-x-4 pt-4">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white py-2 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                        >
+                            {loading && <RefreshCw className="animate-spin w-4 h-4" />}
+                            <span>Update Profile</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setShowUserModal(false)}
+                            className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Upcoming Renewals Modal */}
+            <Modal
+                isOpen={showRenewalsModal}
+                onClose={() => setShowRenewalsModal(false)}
+                title="Upcoming Renewals"
+            >
+                <div className="space-y-4">
+                    {upcomingRenewals.length > 0 ? (
+                        upcomingRenewals.map((renewal, index) => (
+                            <div key={index} className="bg-white/10 rounded-lg p-4 border border-white/20">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="font-semibold text-white">{renewal.name}</h3>
+                                    <span className="text-sm text-purple-400 flex items-center">
+                                        <Calendar className="w-4 h-4 mr-1" />
+                                        {new Date(renewal.nextRenewal).toLocaleDateString()}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-300">Amount:</span>
+                                    <span className="text-white font-medium">{renewal.currency} {renewal.price}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-300">Frequency:</span>
+                                    <span className="text-white capitalize">{renewal.frequency}</span>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="text-center py-8">
+                            <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                            <p className="text-gray-300">No upcoming renewals</p>
+                            <p className="text-gray-500 text-sm">All your subscriptions are up to date</p>
+                        </div>
+                    )}
+                </div>
+            </Modal>
+
+            {/* Confirmation Modal */}
+            <Modal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                title="Confirm Action"
+            >
+                <div className="space-y-4">
+                    <div className="flex items-center space-x-3 text-yellow-400">
+                        <AlertCircle className="w-6 h-6" />
+                        <p className="text-white">{confirmAction?.message}</p>
+                    </div>
+                    
+                    <div className="flex space-x-4 pt-4">
+                        <button
+                            onClick={handleConfirm}
+                            className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors"
+                        >
+                            Yes, Confirm
+                        </button>
+                        <button
+                            onClick={() => setShowConfirmModal(false)}
+                            className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Toast Notification */}
+            <Toast {...toast} onClose={hideToast} />
         </div>
     );
 };
