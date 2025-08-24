@@ -53,7 +53,7 @@ const triggerReminder = async (context, label, subscription) => {
         console.log(`Triggering ${label} reminder`);
 
         await sendReminderEmail({
-            to: "michaelgetuk@yahoo.com",
+            to: subscription.user.email,
             type: label,
             subscription,
         })
