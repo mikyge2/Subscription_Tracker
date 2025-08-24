@@ -33,7 +33,7 @@ const app = express();
 
 // Configure and use CORS to allow frontend (e.g., React app) to communicate with backend
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://172.20.10.4:3000', 'https://subs-tracker-steel.vercel.app/'], // Frontend origin
+    origin: ['https://subscription-track.vercel.app/'], // Frontend origin
     credentials: true,                 // Allow cookies/credentials to be sent
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'] // Allowed headers
