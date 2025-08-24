@@ -17,7 +17,7 @@ import {
     CheckCircle
 } from 'lucide-react';
 
-const API_BASE = 'https://5d8032af9b7e.ngrok-free.app/api/v1';
+const API_BASE = 'https://subscriptiontracker-production-c3ff.up.railway.app/api/v1';
 
 // Custom Modal Component
 const Modal = ({ isOpen, onClose, children, title }) => {
