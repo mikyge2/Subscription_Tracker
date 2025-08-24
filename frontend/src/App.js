@@ -320,6 +320,8 @@ const SubscriptionTracker = () => {
                 email: userEditForm.email
             };
 
+            let passwordChanged = false;
+
             // If password fields are filled, validate and include them
             if (userEditForm.newPassword || userEditForm.currentPassword) {
                 if (!userEditForm.currentPassword) {
@@ -345,12 +347,41 @@ const SubscriptionTracker = () => {
 
                 updateData.currentPassword = userEditForm.currentPassword;
                 updateData.newPassword = userEditForm.newPassword;
+                passwordChanged = true;
             }
 
             const response = await apiCall(`/users/${currentUser._id}`, 'PUT', updateData);
             const updatedUser = { ...currentUser, name: userEditForm.name, email: userEditForm.email };
             setCurrentUser(updatedUser);
             localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            
+            // If password was changed, we need to get a new token
+            if (passwordChanged) {
+                try {
+                    // Sign in again with new credentials to get a fresh token
+                    const signInResponse = await apiCall('/auth/sign-in/', 'POST', {
+                        email: userEditForm.email,
+                        password: userEditForm.newPassword
+                    });
+
+                    if (signInResponse.data.token) {
+                        localStorage.setItem('authToken', signInResponse.data.token);
+                    }
+                    
+                    showToast('Profile and password updated successfully! You have been signed in with your new password.', 'success');
+                } catch (signInError) {
+                    // If sign-in fails, clear tokens and redirect to login
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('currentUser');
+                    showToast('Password updated but automatic sign-in failed. Please sign in again with your new password.', 'error');
+                    setTimeout(() => {
+                        setCurrentUser(null);
+                        setCurrentView('login');
+                    }, 2000);
+                }
+            } else {
+                showToast('Profile updated successfully!', 'success');
+            }
             
             // Reset password fields
             setUserEditForm({
@@ -361,9 +392,14 @@ const SubscriptionTracker = () => {
             });
             
             setShowUserModal(false);
-            showToast(userEditForm.newPassword ? 'Profile and password updated successfully!' : 'Profile updated successfully!', 'success');
+            
         } catch (err) {
             showToast(err.message, 'error');
+            
+            // If the error is related to authentication, it might be because the current password was wrong
+            if (err.message.includes('401') || err.message.includes('Unauthorized') || err.message.includes('Invalid password')) {
+                showToast('Current password is incorrect. Please try again.', 'error');
+            }
         } finally {
             setLoading(false);
         }
